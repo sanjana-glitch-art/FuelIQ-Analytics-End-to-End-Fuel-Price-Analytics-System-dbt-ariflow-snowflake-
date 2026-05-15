@@ -1,5 +1,5 @@
 """
-fuel_price_forecast.py  — DAG 3 of 4
+fuel_price_forecast.py  - DAG 3 of 4
 ================================================
 PURPOSE:
   Trains a Snowflake ML Forecast model on RAW.FUEL_PRICES
@@ -7,10 +7,10 @@ PURPOSE:
 
 INPUT:  RAW.FUEL_PRICES (populated by FuelPrice_EIA_ETL)
 OUTPUT:
-  ADHOC.FUEL_PRICE_TRAIN_VIEW     — clean training view
-  ADHOC.FUEL_PRICE_FORECAST       — raw ML forecast output
-  ANALYTICS.FUEL_PRICE_FINAL      — historical + forecast UNION ALL
-  ANALYTICS.FUEL_PRICE_MODEL_METRICS — evaluation metrics
+  ADHOC.FUEL_PRICE_TRAIN_VIEW     - clean training view
+  ADHOC.FUEL_PRICE_FORECAST       - raw ML forecast output
+  ANALYTICS.FUEL_PRICE_FINAL      - historical + forecast UNION ALL
+  ANALYTICS.FUEL_PRICE_MODEL_METRICS - evaluation metrics
 
 SCHEDULE: Daily 9:00 AM UTC
   (runs 1 hour after FuelPrice_EIA_ETL at 8:00 AM)
@@ -55,7 +55,7 @@ with DAG(
     metrics_tbl  = "USER_DB_FERRET.ANALYTICS.FUEL_PRICE_MODEL_METRICS"
 
     # ============================================================
-    # TASK 1 — Create training view + train model
+    # TASK 1 - Create training view + train model
     # ============================================================
     @task
     def train():
@@ -128,14 +128,14 @@ with DAG(
             conn.close()
 
     # ============================================================
-    # TASK 2 — Generate 12-week forecast + build final table
+    # TASK 2 - Generate 12-week forecast + build final table
     # ============================================================
     @task
     def predict():
         """
         1. Calls model!FORECAST for 12 weeks ahead.
         2. Captures output using RESULT_SCAN(LAST_QUERY_ID()).
-           (This is required — Snowflake ML output cannot be
+           (This is required - Snowflake ML output cannot be
             written directly to a table any other way.)
         3. Creates FUEL_PRICE_FINAL as UNION ALL of:
               historical actuals  (ACTUAL filled, FORECAST null)
