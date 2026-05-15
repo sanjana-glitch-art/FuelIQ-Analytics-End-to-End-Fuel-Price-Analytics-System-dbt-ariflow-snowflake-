@@ -1,5 +1,5 @@
 """
-fuel_realtime_etl_pipeline.py  — DAG 2 of 4
+fuel_realtime_etl_pipeline.py  - DAG 2 of 4
 ================================================
 DATA SOURCE:
   Yahoo Finance via yfinance library
@@ -9,7 +9,7 @@ DATA SOURCE:
   CL=F  WTI Crude Oil Futures       (USD/barrel)
   BZ=F  Brent Crude Oil Futures     (USD/barrel)
   XLE   Energy Select Sector ETF    (USD/share)
-  UGA   US Gasoline Fund ETF        (USD/share — tracks gas futures)
+  UGA   US Gasoline Fund ETF        (USD/share - tracks gas futures)
 
 WHY THESE:
   CL=F + BZ=F = the 2 global crude oil benchmarks.
@@ -46,7 +46,7 @@ def get_cursor():
 
 
 # ============================================================
-# EXTRACT — Yahoo Finance (yfinance)
+# EXTRACT - Yahoo Finance (yfinance)
 # ============================================================
 @task
 def extract_energy_market():
@@ -55,7 +55,7 @@ def extract_energy_market():
     from Yahoo Finance using the yfinance library.
     No API key needed.
 
-    Returns list of dicts — one per (ticker, week).
+    Returns list of dicts - one per (ticker, week).
     """
     import yfinance as yf
 
@@ -106,7 +106,7 @@ def extract_energy_market():
 
 
 # ============================================================
-# TRANSFORM — Energy Market
+# TRANSFORM - Energy Market
 # ============================================================
 @task
 def transform_energy_market(raw_records: list):
@@ -131,7 +131,7 @@ def transform_energy_market(raw_records: list):
 
 
 # ============================================================
-# LOAD — RAW.ENERGY_MARKET_PRICES
+# LOAD - RAW.ENERGY_MARKET_PRICES
 # ============================================================
 @task
 def load_energy_market(records: list):
@@ -192,7 +192,7 @@ def load_energy_market(records: list):
         """)
 
         cur.execute("COMMIT")
-        print(f"RAW.ENERGY_MARKET_PRICES UPSERT SUCCESS — {len(records)} records")
+        print(f"RAW.ENERGY_MARKET_PRICES UPSERT SUCCESS - {len(records)} records")
 
     except Exception as e:
         cur.execute("ROLLBACK")
