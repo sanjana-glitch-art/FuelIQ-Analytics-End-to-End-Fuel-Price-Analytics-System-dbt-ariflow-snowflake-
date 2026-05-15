@@ -1,7 +1,7 @@
 version: 2
 
 # ================================================
-# SOURCES — Raw tables populated by Airflow ETL
+# SOURCES - Raw tables populated by Airflow ETL
 # ================================================
 sources:
   - name: raw
