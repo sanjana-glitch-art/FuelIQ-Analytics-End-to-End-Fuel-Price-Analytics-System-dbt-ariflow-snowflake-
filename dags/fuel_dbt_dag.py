@@ -1,5 +1,5 @@
 """
-fuel_dbt_dag.py  — DAG 4 of 4
+fuel_dbt_dag.py  - DAG 4 of 4
 ================================================
 PURPOSE:
   Runs dbt run → dbt test → dbt snapshot
