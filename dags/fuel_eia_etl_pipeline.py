@@ -1,5 +1,5 @@
 """
-fuel_eia_etl_pipeline.py — DAG 1
+fuel_eia_etl_pipeline.py - DAG 1
 
 Purpose:
   Pulls real weekly EIA fuel price data and loads it into Snowflake.
@@ -38,7 +38,7 @@ def get_cursor():
 
 
 # ============================================================
-# EXTRACT — EIA National Prices
+# EXTRACT - EIA National Prices
 # ============================================================
 @task
 def extract_national_prices():
@@ -91,7 +91,7 @@ def extract_national_prices():
 
 
 # ============================================================
-# EXTRACT — EIA Regional Prices
+# EXTRACT - EIA Regional Prices
 # ============================================================
 @task
 def extract_regional_prices():
@@ -141,7 +141,7 @@ def extract_regional_prices():
 
 
 # ============================================================
-# TRANSFORM — National Prices
+# TRANSFORM - National Prices
 # ============================================================
 @task
 def transform_national(raw_data: dict):
@@ -205,7 +205,7 @@ def transform_national(raw_data: dict):
 
 
 # ============================================================
-# TRANSFORM — Regional Prices
+# TRANSFORM - Regional Prices
 # ============================================================
 @task
 def transform_regional(raw_data: dict):
@@ -245,7 +245,7 @@ def transform_regional(raw_data: dict):
 
 
 # ============================================================
-# LOAD — National Prices
+# LOAD - National Prices
 # ============================================================
 @task
 def load_national_prices(records: list):
@@ -346,7 +346,7 @@ def load_national_prices(records: list):
 
 
 # ============================================================
-# LOAD — Regional Prices
+# LOAD - Regional Prices
 # ============================================================
 @task
 def load_regional_prices(records: list):
