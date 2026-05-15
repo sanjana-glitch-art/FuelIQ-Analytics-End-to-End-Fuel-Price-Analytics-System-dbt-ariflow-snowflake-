@@ -1,5 +1,5 @@
 -- ============================================================
--- FUEL PRICE ANALYTICS — UPDATED SNOWFLAKE SETUP FOR FERRET
+-- FUEL PRICE ANALYTICS - UPDATED SNOWFLAKE SETUP FOR FERRET
 -- Database: USER_DB_FERRET
 -- Warehouse: FERRET_QUERY_WH
 -- Role: TRAINING_ROLE
@@ -79,7 +79,7 @@ CREATE TABLE IF NOT EXISTS RAW.ENERGY_MARKET_PRICES (
 -- STEP 3: ADHOC TABLES
 -- ============================================================
 
--- TABLE 4: ML Training View (created/replaced by Airflow — defined here for reference)
+-- TABLE 4: ML Training View (created/replaced by Airflow - defined here for reference)
 -- This is a VIEW not a table, created by TrainPredict DAG at runtime
 
 -- TABLE 5: Raw ML forecast output
@@ -130,11 +130,11 @@ CREATE TABLE IF NOT EXISTS ANALYTICS.FUEL_PRICE_MODEL_METRICS (
 -- STEP 8: DBT SCHEMA
 -- (Tables created automatically by dbt run )
 -- Listed here for reference only:
---   DBT.PRICE_MOVING_AVG     — rolling averages
---   DBT.PRICE_VOLATILITY     — week-over-week changes
---   DBT.CRUDE_CORRELATION    — crude oil vs pump price
---   DBT.REGIONAL_COMPARISON  — regional price spreads
---   DBT.FUEL_PRICES_SNAPSHOT — SCD Type 2 snapshot
+--   DBT.PRICE_MOVING_AVG     - rolling averages
+--   DBT.PRICE_VOLATILITY     - week-over-week changes
+--   DBT.CRUDE_CORRELATION    - crude oil vs pump price
+--   DBT.REGIONAL_COMPARISON  - regional price spreads
+--   DBT.FUEL_PRICES_SNAPSHOT - SCD Type 2 snapshot
 -- ============================================================
 
 USE SCHEMA DBT;
