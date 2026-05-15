@@ -1,0 +1,73 @@
+-- models/price_moving_avg.sql
+-- ================================================
+-- PURPOSE:
+--   Computes 4-week, 12-week, and 52-week rolling
+--   average prices for regular gasoline and diesel.
+--   Also calculates premium and diesel spreads.
+--
+-- SOURCE TABLE: USER_DB_FERRET.RAW.FUEL_PRICES
+-- OUTPUT TABLE: USER_DB_FERRET.DBT.PRICE_MOVING_AVG
+-- ================================================
+
+{{ config(materialized='table') }}
+
+WITH base AS (
+    SELECT
+        WEEK_DATE,
+        REGION,
+        REGULAR_GASOLINE_PRICE,
+        MIDGRADE_GASOLINE_PRICE,
+        PREMIUM_GASOLINE_PRICE,
+        DIESEL_PRICE
+    FROM {{ source('raw', 'fuel_prices') }}
+    WHERE REGULAR_GASOLINE_PRICE IS NOT NULL
+      AND REGION = 'US_NATIONAL'
+)
+
+SELECT
+    WEEK_DATE,
+    REGION,
+    REGULAR_GASOLINE_PRICE,
+    MIDGRADE_GASOLINE_PRICE,
+    PREMIUM_GASOLINE_PRICE,
+    DIESEL_PRICE,
+
+    -- 4-week rolling averages (~1 month)
+    ROUND(AVG(REGULAR_GASOLINE_PRICE) OVER (
+        PARTITION BY REGION ORDER BY WEEK_DATE
+        ROWS BETWEEN 3 PRECEDING AND CURRENT ROW
+    ), 4) AS REGULAR_4WK_AVG,
+
+    ROUND(AVG(DIESEL_PRICE) OVER (
+        PARTITION BY REGION ORDER BY WEEK_DATE
+        ROWS BETWEEN 3 PRECEDING AND CURRENT ROW
+    ), 4) AS DIESEL_4WK_AVG,
+
+    -- 12-week rolling averages (~3 months)
+    ROUND(AVG(REGULAR_GASOLINE_PRICE) OVER (
+        PARTITION BY REGION ORDER BY WEEK_DATE
+        ROWS BETWEEN 11 PRECEDING AND CURRENT ROW
+    ), 4) AS REGULAR_12WK_AVG,
+
+    ROUND(AVG(DIESEL_PRICE) OVER (
+        PARTITION BY REGION ORDER BY WEEK_DATE
+        ROWS BETWEEN 11 PRECEDING AND CURRENT ROW
+    ), 4) AS DIESEL_12WK_AVG,
+
+    -- 52-week rolling averages (~1 year)
+    ROUND(AVG(REGULAR_GASOLINE_PRICE) OVER (
+        PARTITION BY REGION ORDER BY WEEK_DATE
+        ROWS BETWEEN 51 PRECEDING AND CURRENT ROW
+    ), 4) AS REGULAR_52WK_AVG,
+
+    ROUND(AVG(DIESEL_PRICE) OVER (
+        PARTITION BY REGION ORDER BY WEEK_DATE
+        ROWS BETWEEN 51 PRECEDING AND CURRENT ROW
+    ), 4) AS DIESEL_52WK_AVG,
+
+    -- Price spreads
+    ROUND(PREMIUM_GASOLINE_PRICE - REGULAR_GASOLINE_PRICE, 4) AS PREMIUM_SPREAD,
+    ROUND(DIESEL_PRICE           - REGULAR_GASOLINE_PRICE, 4) AS DIESEL_SPREAD
+
+FROM base
+ORDER BY WEEK_DATE

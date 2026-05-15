@@ -1,0 +1,143 @@
+version: 2
+
+# ================================================
+# SOURCES — Raw tables populated by Airflow ETL
+# ================================================
+sources:
+  - name: raw
+    database: USER_DB_FERRET
+    schema: RAW
+    tables:
+
+      - name: fuel_prices
+        description: "Weekly U.S. national fuel prices from EIA API. Populated by FuelPrice_EIA_ETL DAG."
+        columns:
+          - name: WEEK_DATE
+            tests: [not_null]
+          - name: REGION
+            tests:
+              - not_null
+              - accepted_values:
+                  values: ['US_NATIONAL']
+          - name: REGULAR_GASOLINE_PRICE
+            tests: [not_null]
+          - name: SOURCE
+            tests:
+              - accepted_values:
+                  values: ['EIA_WEEKLY']
+
+      - name: regional_fuel_prices
+        description: "Weekly regional gasoline prices by PADD region from EIA API. Populated by FuelPrice_EIA_ETL DAG."
+        columns:
+          - name: WEEK_DATE
+            tests: [not_null]
+          - name: REGION
+            tests:
+              - not_null
+              - accepted_values:
+                  values:
+                    - EAST_COAST
+                    - MIDWEST
+                    - GULF_COAST
+                    - ROCKY_MOUNTAIN
+                    - WEST_COAST
+                    - CALIFORNIA
+          - name: PRICE
+            tests: [not_null]
+          - name: FUEL_TYPE
+            tests:
+              - accepted_values:
+                  values: ['REGULAR_GASOLINE']
+
+      - name: energy_market_prices
+        description: "Weekly energy market prices from Yahoo Finance (yfinance). Tickers: CL=F, BZ=F, XLE, UGA. Populated by FuelPrice_Realtime_ETL DAG."
+        columns:
+          - name: WEEK_DATE
+            tests: [not_null]
+          - name: TICKER
+            tests:
+              - not_null
+              - accepted_values:
+                  values: ['CL=F', 'BZ=F', 'XLE', 'UGA']
+          - name: CLOSE_PRICE
+            tests: [not_null]
+
+# ================================================
+# MODELS
+# ================================================
+models:
+
+  - name: price_moving_avg
+    description: >
+      4-week, 12-week, and 52-week rolling average prices for regular
+      gasoline and diesel. Also computes premium and diesel spreads.
+      Source: RAW.FUEL_PRICES (EIA national data)
+    columns:
+      - name: WEEK_DATE
+        tests: [not_null]
+      - name: REGION
+        tests: [not_null]
+      - name: REGULAR_GASOLINE_PRICE
+        tests: [not_null]
+      - name: REGULAR_4WK_AVG
+        tests: [not_null]
+      - name: REGULAR_12WK_AVG
+        tests: [not_null]
+
+  - name: price_volatility
+    description: >
+      Week-over-week price changes, percentage changes, rolling
+      standard deviation, and volatility/direction labels.
+      Source: RAW.FUEL_PRICES (EIA national data)
+    columns:
+      - name: WEEK_DATE
+        tests: [not_null]
+      - name: REGION
+        tests: [not_null]
+      - name: REGULAR_GASOLINE_PRICE
+        tests: [not_null]
+      - name: PRICE_DIRECTION
+        tests:
+          - accepted_values:
+              values: ['Rising', 'Falling', 'Stable']
+      - name: VOLATILITY_LABEL
+        tests:
+          - accepted_values:
+              values: ['High Volatility', 'Moderate Volatility', 'Low Volatility']
+
+  - name: crude_correlation
+    description: >
+      Joins retail gasoline prices (EIA) with WTI crude oil futures (yfinance CL=F).
+      Computes pump-to-crude margin with a 2-week crude price lag.
+      Sources: RAW.FUEL_PRICES + RAW.ENERGY_MARKET_PRICES
+    columns:
+      - name: WEEK_DATE
+        tests: [not_null]
+      - name: REGULAR_GASOLINE_PRICE
+        tests: [not_null]
+      - name: MARGIN_CATEGORY
+        tests:
+          - accepted_values:
+              values: ['Wide Margin', 'Normal Margin', 'Tight Margin']
+
+  - name: regional_comparison
+    description: >
+      Regional price spreads vs the U.S. national average.
+      Shows which PADD regions are most and least expensive.
+      Sources: RAW.FUEL_PRICES + RAW.REGIONAL_FUEL_PRICES
+    columns:
+      - name: WEEK_DATE
+        tests: [not_null]
+      - name: REGION
+        tests: [not_null]
+      - name: REGIONAL_PRICE
+        tests: [not_null]
+      - name: PRICE_CATEGORY
+        tests:
+          - accepted_values:
+              values:
+                - 'Significantly Above Average'
+                - 'Above Average'
+                - 'Near National Average'
+                - 'Below Average'
+                - 'Significantly Below Average'
